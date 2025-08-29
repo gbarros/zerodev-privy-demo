@@ -1,0 +1,8 @@
+# Foundry-specific ignores
+broadcast/
+cache/
+out/
+lib/
+
+# General
+.DS_Store
