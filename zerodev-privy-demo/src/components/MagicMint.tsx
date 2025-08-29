@@ -62,15 +62,7 @@ export default function MagicMint() {
         entryPoint,
         kernelVersion,
       });
-
-      const smartAccountBytecode = await publicClient.getBytecode({
-        address: account.address,
-      });
-
-      // If the smart account is not deployed, we need to use the factory
-      const factory = smartAccountBytecode ? undefined : account.factory;
-      const factoryData = smartAccountBytecode ? undefined : account.factoryData;
-
+      
       if (!envOk) throw new Error('Missing NEXT_PUBLIC_ZERODEV_BUNDLER_RPC or NEXT_PUBLIC_ZERODEV_PAYMASTER_RPC in .env.local');
 
       // Configure ZeroDev Paymaster client and wire into Kernel client

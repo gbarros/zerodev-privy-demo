@@ -73,7 +73,7 @@ NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id_here
 
 # ZeroDev RPC endpoints (from dashboard.zerodev.app)
 NEXT_PUBLIC_ZERODEV_BUNDLER_RPC=https://rpc.zerodev.app/api/v3/YOUR_PROJECT_ID/chain/11155111
-NEXT_PUBLIC_ZERODEV_PAYMASTER_RPC=https://rpc.zerodev.app/api/v3/YOUR_PROJECT_ID/chain/11155111?selfFunded=true
+NEXT_PUBLIC_ZERODEV_PAYMASTER_RPC=https://rpc.zerodev.app/api/v3/YOUR_PROJECT_ID/chain/11155111
 
 # Deployed MagicBadge contract on Sepolia
 NEXT_PUBLIC_NFT_CONTRACT_ADDRESS=0x7F07bf8A79d91478Fe7EAA4c39935b26F3A13980
@@ -136,8 +136,8 @@ Privy automatically creates an embedded wallet when users log in with email. Thi
 ```typescript
 const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
   signer,
-  entryPoint: constants.getEntryPoint('0.7'),
-  kernelVersion: constants.KERNEL_V3_3,
+  entryPoint,
+  kernelVersion,
 });
 ```
 
@@ -148,8 +148,8 @@ The validator links the Privy wallet to the ZeroDev smart account, enabling the 
 ```typescript
 const account = await createKernelAccount(publicClient, {
   plugins: { sudo: ecdsaValidator },
-  entryPoint: constants.getEntryPoint('0.7'),
-  kernelVersion: constants.KERNEL_V3_3,
+  entryPoint,
+  kernelVersion,
 });
 ```
 
@@ -226,8 +226,7 @@ PAYMASTER_RPC=...
 The component handles common errors:
 - Missing environment variables
 - Wallet connection issues
-- Transaction failures
-- Paymaster insufficient funds
+- Transaction failures (e.g., paymaster issues)
 
 ### Security Considerations
 

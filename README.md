@@ -149,7 +149,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## 📄 License
 
-MIT License - see individual project directories for specific license files.
+Apache License 2.0 - see individual project directories for specific license files.
 
 ---
 
