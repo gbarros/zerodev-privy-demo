@@ -1,21 +1,21 @@
-// zerodev-privy-demo/src/components/MagicMint.tsx
+// src/app/simple-login-mint/components/MagicMint.tsx
 
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import {
-  createKernelAccount,
-  createKernelAccountClient,
-  createZeroDevPaymasterClient,
-} from '@zerodev/sdk';
-import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
-import { constants } from '@zerodev/sdk';
-import { http, createPublicClient, EIP1193Provider, zeroAddress } from 'viem';
+import { createKernelAccountClient } from '@zerodev/sdk';
 import { sepolia } from 'viem/chains';
-import { nftContractAbi, nftContractAddress } from '@/lib/contract';
+import { nftContractAbi, nftContractAddress } from '../../../lib/contract';
+import { 
+  findEmbeddedWallet, 
+  createSmartAccount, 
+  validateEnvironment,
+  type SmartAccountResult 
+} from '../../../lib/smartAccount';
 
 export default function MagicMint() {
+  // Get Privy auth state
   const { login, ready, authenticated, logout } = usePrivy();
   const { wallets } = useWallets();
 
@@ -27,66 +27,32 @@ export default function MagicMint() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const bundlerRpc = process.env.NEXT_PUBLIC_ZERODEV_BUNDLER_RPC;
-  const paymasterRpc = process.env.NEXT_PUBLIC_ZERODEV_PAYMASTER_RPC;
-
-  const envOk = useMemo(() => !!bundlerRpc && !!paymasterRpc, [bundlerRpc, paymasterRpc]);
-
   const setupSmartAccount = useCallback(async () => {
     try {
       setError(null);
-      // Find embedded wallet from Privy
-      const embedded = wallets.find((w) => w.walletClientType === 'privy');
-      if (!embedded) throw new Error('Embedded wallet not found. Ensure embedded wallets are enabled in Privy config.');
-
-      const provider = await embedded.getEthereumProvider();
-      // Pass EIP-1193 provider directly as Signer to ZeroDev utilities
-      const signer = provider as EIP1193Provider;
-
-      // viem public client for reads & chain config
-      const publicClient = createPublicClient({ chain: sepolia, transport: http(sepolia.rpcUrls.default.http[0]) });
-
-      // Configure EntryPoint and Kernel version per ZeroDev SDK (no permissionless needed)
-      const entryPoint = constants.getEntryPoint('0.7');
-      const kernelVersion = constants.KERNEL_V3_3;
-
-      // Create ZeroDev validator & account
-      const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
-        signer,
-        entryPoint,
-        kernelVersion,
-      });
-
-      const account = await createKernelAccount(publicClient, {
-        plugins: { sudo: ecdsaValidator },
-        entryPoint,
-        kernelVersion,
-      });
       
-      if (!envOk) throw new Error('Missing NEXT_PUBLIC_ZERODEV_BUNDLER_RPC or NEXT_PUBLIC_ZERODEV_PAYMASTER_RPC in .env.local');
+      // Validate environment variables
+      const { bundlerRpc, paymasterRpc } = validateEnvironment();
+      
+      // Find Privy's embedded wallet
+      const embeddedWallet = findEmbeddedWallet(wallets);
+      
+      // Create smart account with ZeroDev
+      const result: SmartAccountResult = await createSmartAccount(
+        embeddedWallet,
+        bundlerRpc,
+        paymasterRpc
+      );
 
-      // Configure ZeroDev Paymaster client and wire into Kernel client
-      const paymaster = createZeroDevPaymasterClient({
-        chain: sepolia,
-        transport: http(paymasterRpc!),
-      });
-
-      const client = createKernelAccountClient({
-        account,
-        chain: sepolia,
-        bundlerTransport: http(bundlerRpc!),
-        paymaster,
-      });
-
-      setKernelClient(client);
-      setSaAddress(client.account?.address || null);
-      setEoaAddress(embedded.address as `0x${string}`);
+      setKernelClient(result.kernelClient);
+      setSaAddress(result.smartAccountAddress);
+      setEoaAddress(result.eoaAddress);
     } catch (e: unknown) {
       console.error(e);
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg || 'Failed to initialize smart account');
     }
-  }, [wallets, envOk, bundlerRpc, paymasterRpc]);
+  }, [wallets]);
 
   useEffect(() => {
     if (authenticated && wallets.length > 0) {
@@ -129,17 +95,25 @@ export default function MagicMint() {
 
   if (!authenticated) {
     return (
-      <button
-        onClick={login}
-        className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg"
-      >
-        Log In
-      </button>
+      <div className="flex flex-col items-center gap-4">
+        <h2 className="text-2xl font-semibold mb-4">Simple Login & Mint Demo</h2>
+        <p className="text-gray-600 text-center max-w-md mb-4">
+          Login with your email and mint an NFT with sponsored transactions using account abstraction.
+        </p>
+        <button
+          onClick={login}
+          className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg"
+        >
+          Log In
+        </button>
+      </div>
     );
   }
 
   return (
     <div className="flex flex-col items-center gap-4">
+      <h2 className="text-2xl font-semibold mb-4">Simple Login & Mint Demo</h2>
+      
       <button
         onClick={logout}
         className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-black rounded-lg"

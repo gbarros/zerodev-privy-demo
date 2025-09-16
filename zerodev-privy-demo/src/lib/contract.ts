@@ -5,7 +5,7 @@
 export const nftContractAddress = process.env
   .NEXT_PUBLIC_NFT_CONTRACT_ADDRESS as `0x${string}`;
 
-// Minimal ERC-721 ABI with `mint()`, `safeMint(address)` and helper reads (name, symbol)
+// Extended ERC-721 ABI with batch operations and helper functions
 export const nftContractAbi = [
   {
     type: 'function',
@@ -23,6 +23,16 @@ export const nftContractAbi = [
   },
   {
     type: 'function',
+    name: 'batchMint',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'quantity', type: 'uint256' }
+    ],
+    outputs: [],
+  },
+  {
+    type: 'function',
     name: 'name',
     stateMutability: 'view',
     inputs: [],
@@ -34,5 +44,19 @@ export const nftContractAbi = [
     stateMutability: 'view',
     inputs: [],
     outputs: [{ name: '', type: 'string' }],
+  },
+  {
+    type: 'function',
+    name: 'balanceOf',
+    stateMutability: 'view',
+    inputs: [{ name: 'owner', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    type: 'function',
+    name: 'totalSupply',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
   },
 ] as const;

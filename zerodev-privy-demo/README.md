@@ -1,6 +1,6 @@
-# ZeroDev x Privy Demo: Gasless NFT Minting
+# ZeroDev x Privy Demo: Sponsored NFT Minting
 
-A comprehensive tutorial demonstrating the "magic" of account abstraction using **Privy** for email-based authentication and **ZeroDev** for gasless smart account transactions.
+A comprehensive tutorial demonstrating the "magic" of account abstraction using **Privy** for email-based authentication and **ZeroDev** for sponsored smart account transactions.
 
 ## 🎯 What This Demo Does
 
@@ -8,7 +8,7 @@ This application showcases how to create a seamless Web3 experience where users 
 
 1. **Log in with just their email** (no wallet installation required)
 2. **Get both an EOA and Smart Account** automatically
-3. **Mint NFTs with zero gas fees** using account abstraction
+3. **Mint NFTs with sponsored transactions** using account abstraction
 4. **Experience true Web2-like UX** in Web3
 
 ## 🏗️ Architecture Overview
@@ -93,7 +93,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## 🧩 Understanding the MagicMint Component
 
-The core functionality lives in `src/components/MagicMint.tsx`. Here's how it works:
+The core functionality lives in `src/app/simple-login-mint/components/MagicMint.tsx`. Here's how it works:
 
 ### Key Imports and Setup
 
@@ -173,9 +173,9 @@ const client = createKernelAccountClient({
 
 The paymaster sponsors gas fees, and the client handles transaction bundling and execution.
 
-### Gasless NFT Minting
+### Sponsored NFT Minting
 
-The `handleMint` function demonstrates gasless transactions:
+The `handleMint` function demonstrates sponsored transactions:
 
 ```typescript
 const hash = await kernelClient.writeContract({
@@ -189,7 +189,7 @@ const hash = await kernelClient.writeContract({
 ```
 
 Key points:
-- **No gas required from user**: The paymaster covers all fees
+- **No gas required from user**: The paymaster sponsors all fees
 - **Standard contract interaction**: Uses familiar viem patterns
 - **Automatic bundling**: ZeroDev handles UserOperation creation and submission
 
@@ -199,14 +199,14 @@ Key points:
 2. **Authentication**: Privy modal for email login
 3. **Account Setup**: Automatic creation of EOA and Smart Account
 4. **Address Display**: Shows both wallet addresses
-5. **Minting**: One-click gasless NFT minting
+5. **Minting**: One-click sponsored NFT minting
 6. **Success**: Transaction hash and Etherscan link
 
 ## 🔧 Technical Deep Dive
 
 ### Account Abstraction Benefits
 
-1. **Gas Abstraction**: Users don't need ETH for transactions
+1. **Transaction Sponsorship**: Users don't need ETH for transactions
 2. **Key Management**: Email-based recovery instead of seed phrases
 3. **Batch Transactions**: Multiple operations in one transaction
 4. **Custom Logic**: Programmable transaction validation
