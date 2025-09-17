@@ -1,34 +1,40 @@
-# ZeroDev x Privy Demo: Complete Account Abstraction Solution
+# ZeroDev × Privy demo suite
 
-A comprehensive demonstration of account abstraction using **Privy** for email-based authentication and **ZeroDev** for gasless smart account transactions. This repository contains both the smart contracts and the frontend application.
+This repository is a living lab for account abstraction on Ethereum testnets. It pairs **Privy** (email-based embedded wallets) with **ZeroDev** (Kernel v3 smart accounts, paymasters, and permissioning) and ships:
+
+- A Next.js app with three hands-on AA experiences
+- Foundry contracts used by the demos
 
 ## 🏗️ Repository Structure
 
 ```
 zerodev-privy-demo/
-├── foundry-contracts/          # Smart contracts (Foundry project)
-│   ├── src/
-│   │   └── MagicBadge.sol     # ERC-721 NFT contract
+├── foundry-contracts/                 # Smart contracts (Foundry project)
 │   ├── script/
-│   │   └── MagicBadge.s.sol   # Deployment script
-│   └── test/                   # Contract tests
-├── zerodev-privy-demo/        # Frontend application (Next.js)
+│   │   └── MagicBadge.s.sol          # Deployment script
 │   ├── src/
-│   │   ├── app/               # Next.js app directory
-│   │   ├── components/        # React components
-│   │   └── lib/               # Utilities and config
-│   └── README.md              # Detailed frontend tutorial
-└── README.md                  # This file
+│   │   └── MagicBadge.sol            # ERC-721 NFT contract
+│   └── test/                         # Contract tests
+├── zerodev-privy-demo/                # Next.js demo application
+│   ├── src/app/
+│   │   ├── batch-operations/         # UserOp batching walkthrough
+│   │   ├── session-keys/             # Scoped/session key demo
+│   │   ├── simple-login-mint/        # “Hello AA” sponsored mint
+│   │   └── page.tsx                  # Landing page linking all demos
+│   ├── src/lib/                      # Shared AA helpers (smart account, contracts)
+│   └── README.md                     # In-depth frontend tutorial
+└── README.md                         # Repo overview (this file)
 ```
 
-## 🎯 What This Demo Does
+## 🎯 Available demos
 
-This application showcases how to create a seamless Web3 experience where users can:
+From the homepage (`npm run dev` → `http://localhost:3000`) you can launch three ZeroDev-powered flows:
 
-1. **Log in with just their email** (no wallet installation required)
-2. **Get both an EOA and Smart Account** automatically
-3. **Mint NFTs with zero gas fees** using account abstraction
-4. **Experience true Web2-like UX** in Web3
+1. **Simple Login & Mint** – Email sign-in via Privy, automatic Kernel smart account provisioning, and a sponsored NFT mint using a verifying paymaster.
+2. **Batch Operations** – Compose several contract calls (multiple `mint()`s) into a single UserOperation, observe live status transitions, and inspect operation previews.
+3. **Session Keys** – Grant a time-bound, usage-limited permission that lets the dapp mint without further wallet prompts. Includes on-chain revocation and usage tracking.
+
+All demos reuse the same shared helpers in `src/lib/`: we create smart accounts against EntryPoint 0.7 / Kernel v3.3, use ZeroDev paymasters for gas, and showcase best practices.
 
 ## 🚀 Quick Start
 
@@ -38,6 +44,7 @@ This application showcases how to create a seamless Web3 experience where users 
 2. **Foundry** for smart contract development
 3. **Privy Account**: Sign up at [privy.io](https://privy.io)
 4. **ZeroDev Account**: Sign up at [zerodev.app](https://zerodev.app)
+5. **Ethereum Sepolia RPC** (Alchemy, Infura)
 
 ### 1. Clone and Install
 
@@ -56,7 +63,7 @@ forge install
 
 ### 2. Smart Contract Setup
 
-The `MagicBadge.sol` contract is already deployed on Sepolia at:
+The demo targets the `MagicBadge.sol` ERC-721 contract. A pre-deployed instance exists on Sepolia at:  
 **`0x7F07bf8A79d91478Fe7EAA4c39935b26F3A13980`**
 
 To deploy your own contract:
@@ -95,12 +102,13 @@ cd zerodev-privy-demo
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the application.
+Open [http://localhost:3000](http://localhost:3000) to explore the landing page and jump into any of the demos.
+
 
 ## 📚 Detailed Documentation
 
-- **Frontend Tutorial**: See `zerodev-privy-demo/README.md` for comprehensive setup and code explanation
-- **Smart Contracts**: See `foundry-contracts/README.md` for contract details and deployment
+- **Frontend tutorials**: `zerodev-privy-demo/README.md` breaks down the simple mint flow end-to-end.
+- **Smart contracts**: `foundry-contracts/README.md` covers the MagicBadge contract and deployment scripts.
 
 ## 🔧 Key Technologies
 
@@ -112,17 +120,18 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## 🎨 Features Demonstrated
 
-### Account Abstraction Benefits
-- **Gas Sponsorship**: Users don't need ETH for transactions
-- **Email Login**: No seed phrases or wallet installations
-- **Smart Account**: Programmable wallet with advanced features
-- **Seamless UX**: Web2-like experience in Web3
+### User experience wins
+- **Gasless onboarding** using verifying/token paymasters
+- **Email login** with embedded wallet provisioning
+- **Repeat actions without prompts** thanks to session keys
+- **One-click multi-step flows** through batched UserOperations
 
-### Technical Implementation
-- **ERC-4337 UserOperations**: Gasless transaction execution
-- **Paymaster Integration**: Automatic gas sponsorship
-- **Embedded Wallets**: Privy-managed EOA as smart account signer
-- **Contract Interaction**: Standard ERC-721 NFT minting
+### Technical building blocks
+- **Kernel v3 smart accounts** controlled by Privy EOAs
+- **ZeroDev paymaster clients** for sponsored gas and reimbursements
+- **Permission validator** demo via `serializePermissionAccount`/`deserializePermissionAccount`
+- **ERC-4337 batching** with status polling (submitted → included)
+- **Foundry tooling** for rapid contract iteration
 
 ## 🚨 Troubleshooting
 
@@ -132,9 +141,16 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 - Check paymaster balance in ZeroDev dashboard
 - Verify paymaster RPC URL configuration
 
+**Session mint fails or bypasses limits**
+- Ensure the serialized session approval is present in `localStorage`
+- Revoke and grant a fresh session to reset usage counters
+
 **"Embedded wallet not found"**
 - Enable embedded wallets in Privy dashboard
 - Ensure email login is configured
+
+**`npm install` stalls**
+- The project uses a fairly large dependency graph (Next.js 15, Privy SDK). Re-run with a longer timeout or a faster network.
 
 **Contract verification failed**
 - Get Etherscan API key and add to environment

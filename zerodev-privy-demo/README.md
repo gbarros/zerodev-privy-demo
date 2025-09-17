@@ -1,4 +1,4 @@
-# ZeroDev x Privy Demo: Sponsored NFT Minting
+# ZeroDev × Privy Demo: Frontend walkthrough
 
 A comprehensive tutorial demonstrating the "magic" of account abstraction using **Privy** for email-based authentication and **ZeroDev** for sponsored smart account transactions.
 
@@ -9,7 +9,21 @@ This application showcases how to create a seamless Web3 experience where users 
 1. **Log in with just their email** (no wallet installation required)
 2. **Get both an EOA and Smart Account** automatically
 3. **Mint NFTs with sponsored transactions** using account abstraction
-4. **Experience true Web2-like UX** in Web3
+4. **Batch multiple contract calls** into a single UserOperation
+5. **Grant session keys** so repeat actions need no extra prompts
+6. **Experience true Web2-like UX** in Web3
+
+## 🧪 Available demos in this app
+
+The landing page (`/src/components/HomePage.tsx`) links to three flows. You can open them directly while running `npm run dev`:
+
+| Route | What it shows | Key files |
+| --- | --- | --- |
+| `/simple-login-mint` | "Hello, AA" onboarding & sponsored NFT mint | `src/app/simple-login-mint/components/MagicMint.tsx` |
+| `/batch-operations` | Compose multiple `mint()` calls into one UserOperation with live status updates | `src/app/batch-operations/components/BatchOperations.tsx` + `src/app/batch-operations/lib/userOps.ts` |
+| `/session-keys` | Grant/revoke a scoped session key with time/usage limits and mint without prompts | `src/app/session-keys/components/SessionKeyDemo.tsx` + `src/app/session-keys/lib/sessionKeys.ts` |
+
+Shared utilities live under `src/lib/` (smart account setup, contract ABI) so each demo focuses on its unique UX.
 
 ## 🏗️ Architecture Overview
 
@@ -21,7 +35,7 @@ This application showcases how to create a seamless Web3 experience where users 
 - **Blockchain**: Ethereum Sepolia testnet
 - **Web3 Library**: viem
 
-### How It Works
+### How It Works (simple login & mint)
 
 ```mermaid
 graph TD
@@ -91,7 +105,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-## 🧩 Understanding the MagicMint Component
+## 🧩 Understanding the MagicMint component
 
 The core functionality lives in `src/app/simple-login-mint/components/MagicMint.tsx`. Here's how it works:
 
@@ -119,7 +133,7 @@ const [loading, setLoading] = useState(false);                             // Lo
 const [error, setError] = useState<string | null>(null);                   // Error messages
 ```
 
-### Smart Account Creation Process
+### Smart account creation process
 
 #### Step 1: Get Privy's Embedded Wallet
 
@@ -173,7 +187,7 @@ const client = createKernelAccountClient({
 
 The paymaster sponsors gas fees, and the client handles transaction bundling and execution.
 
-### Sponsored NFT Minting
+### Sponsored NFT minting
 
 The `handleMint` function demonstrates sponsored transactions:
 
@@ -193,7 +207,7 @@ Key points:
 - **Standard contract interaction**: Uses familiar viem patterns
 - **Automatic bundling**: ZeroDev handles UserOperation creation and submission
 
-### User Experience Flow
+### User experience flow
 
 1. **Initial State**: User sees "Log In" button
 2. **Authentication**: Privy modal for email login
@@ -202,25 +216,13 @@ Key points:
 5. **Minting**: One-click sponsored NFT minting
 6. **Success**: Transaction hash and Etherscan link
 
-## 🔧 Technical Deep Dive
+## 🌱 Beyond MagicMint
 
-### Account Abstraction Benefits
+- **Batch operations** (`src/app/batch-operations/…`): shows how to compose multiple contract calls, preview them for the user, and stream status updates as the UserOperation moves from `submitted` → `processing` → `included`.
+- **Session keys** (`src/app/session-keys/…`): demonstrates the owner/agent pattern with `serializePermissionAccount`/`deserializePermissionAccount`, usage counters, and on-chain revocation using ZeroDev permissions.
+- **Shared helpers** (`src/lib/smartAccount.ts`, `src/lib/contract.ts`): provide reusable smart-account setup so each page can focus on UX.
 
-1. **Transaction Sponsorship**: Users don't need ETH for transactions
-2. **Key Management**: Email-based recovery instead of seed phrases
-3. **Batch Transactions**: Multiple operations in one transaction
-4. **Custom Logic**: Programmable transaction validation
-
-### ZeroDev Integration Patterns
-
-#### Paymaster Configuration
-```typescript
-// Self-funded paymaster (you deposit ETH)
-PAYMASTER_RPC=...?selfFunded=true
-
-// Sponsored paymaster (ZeroDev covers costs)
-PAYMASTER_RPC=...
-```
+Each demo leans on the same environment variables and smart account setup described above, so once the app runs you can explore all flows without extra configuration.
 
 #### Error Handling
 The component handles common errors:
