@@ -7,6 +7,7 @@ import {
   createKernelAccount,
   createZeroDevPaymasterClient,
   constants,
+  type KernelAccountClient,
 } from '@zerodev/sdk';
 import {
   toPermissionValidator,
@@ -20,9 +21,6 @@ import {
   CallPolicyVersion,
 } from '@zerodev/permissions/policies';
 import { toECDSASigner } from '@zerodev/permissions/signers';
-import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
-// Note: addressToEmptyAccount might be from a different package
-// Let's create a simple implementation for the demo
 import {
   http,
   createPublicClient,
@@ -30,7 +28,6 @@ import {
 } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
-import type { ConnectedWallet } from '@privy-io/react-auth';
 import { nftContractAddress, nftContractAbi } from '../../../lib/contract';
 
 export interface SessionKeyData {
@@ -64,7 +61,7 @@ export interface SessionStatus {
  * Implements owner-agent pattern with serializePermissionAccount
  */
 export async function createSessionKey(
-  kernelClient: ReturnType<typeof createKernelAccountClient>
+  kernelClient: KernelAccountClient
 ): Promise<SessionKeyData> {
   // Create public client
   const publicClient = createPublicClient({
@@ -87,6 +84,7 @@ export async function createSessionKey(
     // OWNER SIDE: Create approval for the session key
     
     // Get the owner's ECDSA validator from existing kernel client
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ownerValidator = (kernelClient.account as any)?.kernelPluginManager?.sudoValidator;
     if (!ownerValidator) {
       throw new Error('No owner validator found');
@@ -291,7 +289,7 @@ export async function mintWithSession(
  * This requires the owner's wallet signature to execute
  */
 export async function revokeSession(
-  kernelClient: ReturnType<typeof createKernelAccountClient>
+  kernelClient: KernelAccountClient
 ): Promise<void> {
   const bundlerRpc = process.env.NEXT_PUBLIC_ZERODEV_BUNDLER_RPC!;
   const paymasterRpc = process.env.NEXT_PUBLIC_ZERODEV_PAYMASTER_RPC!;
@@ -318,6 +316,7 @@ export async function revokeSession(
 
   try {
     // Get the owner's ECDSA validator from existing kernel client
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ownerValidator = (kernelClient.account as any)?.kernelPluginManager?.sudoValidator;
     if (!ownerValidator) {
       throw new Error('No owner validator found');

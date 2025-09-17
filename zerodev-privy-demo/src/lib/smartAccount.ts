@@ -2,9 +2,10 @@
 // Smart account initialization utilities for ZeroDev + Privy integration
 
 import {
-  createKernelAccount,
   createKernelAccountClient,
+  createKernelAccount,
   createZeroDevPaymasterClient,
+  type KernelAccountClient,
 } from '@zerodev/sdk';
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { constants } from '@zerodev/sdk';
@@ -14,7 +15,7 @@ import { sepolia } from 'viem/chains';
 import type { ConnectedWallet } from '@privy-io/react-auth';
 
 export interface SmartAccountResult {
-  kernelClient: ReturnType<typeof createKernelAccountClient>;
+  kernelClient: KernelAccountClient;
   smartAccountAddress: `0x${string}`;
   eoaAddress: `0x${string}`;
 }
@@ -34,7 +35,8 @@ export function monkeyPatchSignUserOperation(ownerAddress: `0x${string}`) {
     verifyingContract: constants.getEntryPoint('0.7').address,
   };
   
-  const types = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const types: any = {
     PackedUserOperation: [
       { name: "sender", type: "address" },
       { name: "nonce", type: "uint256" },
@@ -53,7 +55,8 @@ export function monkeyPatchSignUserOperation(ownerAddress: `0x${string}`) {
   const packGasFees = (maxTip: bigint, maxFee: bigint) =>
     `0x${((maxTip << 128n) | maxFee).toString(16).padStart(64, "0")}`;
 
-  return function(this: any, op: any, ctx?: any): Promise<`0x${string}`> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return function(this: any, op: any): Promise<`0x${string}`> {
     // `op` is the Prepared/PackedUserOperation the SDK was about to sign.
     const message = {
       sender: op.sender,

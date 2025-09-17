@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { createKernelAccountClient } from '@zerodev/sdk';
+import { createKernelAccountClient, type KernelAccountClient } from '@zerodev/sdk';
 import { 
   findEmbeddedWallet, 
   createSmartAccount, 
@@ -28,8 +28,7 @@ export default function BatchOperations() {
   // Smart account state
   const [saAddress, setSaAddress] = useState<`0x${string}` | null>(null);
   const [eoaAddress, setEoaAddress] = useState<`0x${string}` | null>(null);
-  const [kernelClient, setKernelClient] =
-    useState<ReturnType<typeof createKernelAccountClient> | null>(null);
+  const [kernelClient, setKernelClient] = useState<KernelAccountClient | null>(null);
   
   // Operation state
   const [mintQuantity, setMintQuantity] = useState(3);
@@ -67,25 +66,18 @@ export default function BatchOperations() {
   }, [authenticated, wallets, setupSmartAccount]);
 
   // Compose the batch operation
-  const composeOperation = useCallback(() => {
+  const composeOperation = useCallback(async () => {
     if (!saAddress) return;
 
     setOpStatus('composing');
     
     // Create multiple mint operations
-    const batchOps = createBatchOperations(
-      nftContractAddress,
-      nftContractAbi,
-      Array.from({ length: mintQuantity }, (_, i) => ({
-        functionName: 'mint',
-        args: [],
-        description: `Mint NFT #${i + 1}`,
-      }))
-    );
+    if (!kernelClient) return;
+    const ops = await createBatchOperations(kernelClient, nftContractAddress, nftContractAbi);
+    setOperations(ops);
 
-    setOperations(batchOps);
     setOpStatus('idle');
-  }, [saAddress, mintQuantity]);
+  }, [saAddress, kernelClient]);
 
   // Execute the batch operation
   const executeOperation = useCallback(async () => {
@@ -99,20 +91,16 @@ export default function BatchOperations() {
     setTxHash(null);
 
     try {
-      const result = await executeBatchOperation(
+      const txHash = await executeBatchOperation(
         kernelClient,
         operations,
-        (status, data) => {
+        (status: UserOpStatus) => {
           setOpStatus(status);
-          if (data?.opHash) setOpHash(data.opHash);
-          if (data?.txHash) setTxHash(data.txHash);
-          if (data?.error) setError(data.error);
         }
       );
-
-      if (result.status === 'failed') {
-        setError(result.error || 'Operation failed');
-      }
+      
+      setTxHash(txHash);
+      setOpHash(txHash);
     } catch (e: unknown) {
       console.error('Operation error:', e);
       const msg = e instanceof Error ? e.message : String(e);
@@ -217,8 +205,8 @@ export default function BatchOperations() {
           <h3 className="text-lg font-semibold mb-4">2. Confirm Operation</h3>
           
           <div className="mb-4">
-            <p className="text-gray-600 mb-2">
-              This will execute {operations.length} action{operations.length > 1 ? 's' : ''} in a single UserOperation:
+            <p className="text-gray-700 text-sm">
+              This demo shows ZeroDev&apos;s batch operations - bundling multiple transactions into a single UserOperation for better UX and gas efficiency.
             </p>
             <ul className="list-disc list-inside text-sm text-gray-700">
               {operations.map((op, index) => (
@@ -300,7 +288,7 @@ export default function BatchOperations() {
 
       {/* Educational Note */}
       <div className="w-full p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h4 className="font-semibold text-blue-900 mb-2">💡 What's happening here?</h4>
+        <h4 className="font-semibold text-blue-900 mb-2">💡 What&apos;s happening here?</h4>
         <ul className="text-sm text-blue-800 space-y-1">
           <li>• <strong>One confirmation, multiple actions:</strong> Batch multiple mints into a single UserOperation</li>
           <li>• <strong>Operation tracking:</strong> Monitor progress from submission to on-chain inclusion</li>

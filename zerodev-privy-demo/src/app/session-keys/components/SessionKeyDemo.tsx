@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { createKernelAccountClient } from '@zerodev/sdk';
+import { createKernelAccountClient, type KernelAccountClient } from '@zerodev/sdk';
 import { 
   validateEnvironment, 
   findEmbeddedWallet,
@@ -24,13 +24,13 @@ import {
 type DemoStatus = 'idle' | 'granting' | 'minting' | 'revoking' | 'error';
 
 export default function SessionKeyDemo() {
-  const { login, ready, authenticated, logout } = usePrivy();
+  const { login, ready, authenticated } = usePrivy();
   const { wallets } = useWallets();
   
   // Smart account state
   const [saAddress, setSaAddress] = useState<`0x${string}` | null>(null);
-  const [eoaAddress, setEoaAddress] = useState<`0x${string}` | null>(null);
-  const [kernelClient, setKernelClient] = useState<ReturnType<typeof createKernelAccountClient> | null>(null);
+  const [, setEoaAddress] = useState<`0x${string}` | null>(null);
+  const [kernelClient, setKernelClient] = useState<KernelAccountClient | null>(null);
   const [sessionData, setSessionData] = useState<SessionKeyData | null>(null);
   
   // Session state
@@ -68,7 +68,7 @@ export default function SessionKeyDemo() {
         try {
           const existingSession = JSON.parse(existingSessionStr);
           setSessionData(existingSession);
-        } catch (err) {
+        } catch {
           console.warn('Invalid session data in localStorage, clearing it');
           localStorage.removeItem('sessionKeyData');
         }
@@ -316,7 +316,7 @@ export default function SessionKeyDemo() {
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <h3 className="font-medium text-yellow-800">Usage Limit Reached</h3>
               <p className="text-sm text-yellow-700 mt-1">
-                You've used all 3 mints for this session. Revoke and create a new session to continue.
+                You&apos;ve used all 3 mints for this session. Revoke and create a new session to continue.
               </p>
             </div>
           )}

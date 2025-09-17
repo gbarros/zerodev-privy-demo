@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { createKernelAccountClient } from '@zerodev/sdk';
+import { createKernelAccountClient, type KernelAccountClient } from '@zerodev/sdk';
 import { sepolia } from 'viem/chains';
 import { nftContractAbi, nftContractAddress } from '../../../lib/contract';
 import { 
@@ -21,8 +21,7 @@ export default function MagicMint() {
 
   const [saAddress, setSaAddress] = useState<`0x${string}` | null>(null);
   const [eoaAddress, setEoaAddress] = useState<`0x${string}` | null>(null);
-  const [kernelClient, setKernelClient] =
-    useState<ReturnType<typeof createKernelAccountClient> | null>(null);
+  const [kernelClient, setKernelClient] = useState<KernelAccountClient | null>(null);
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
